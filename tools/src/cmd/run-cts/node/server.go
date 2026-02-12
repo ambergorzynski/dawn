@@ -122,7 +122,7 @@ func (c *cmd) runTestCasesWithServers(
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			if err := c.runServer(ctx, id, testCases, testCaseIndices, results, fsReaderWriter); err != nil {
+			if err := c.runServer(ctx, id, testCases, testCaseIndices, results, fsReaderWriter, testIDMap); err != nil {
 				results <- common.Result{
 					Status: common.Fail,
 					Error:  fmt.Errorf("Test server error: %w", err),
@@ -147,7 +147,8 @@ func (c *cmd) runServer(
 	testCases []common.TestCase,
 	testCaseIndices <-chan int,
 	results chan<- common.Result,
-	fsReaderWriter oswrapper.FilesystemReaderWriter) error {
+	fsReaderWriter oswrapper.FilesystemReaderWriter,
+	testIDMap map[string]string) error {
 
 	var port int
 	testCaseLog := &bytes.Buffer{}
@@ -231,7 +232,16 @@ func (c *cmd) runServer(
 		}
 
 		// Load the cases
-		postResp, postErr := http.Post(fmt.Sprintf("http://localhost:%v/load?%v", port, c.query), "", &bytes.Buffer{})
+		var request string
+		if c.flags.mutantTracking {
+			fileName := fmt.Sprintf("/data/dev/dredd-webgpu-testing/data/tracking_files/track_%d.txt", idx)
+			os.Setenv("DREDD_MUTANT_TRACKING_FILE", fileName)
+			request = fmt.Sprintf("http://localhost:%v/run?%v?%v", port, testCases[idx], testIDMap[string(testCases[idx])])
+		} else {
+			request = fmt.Sprintf("http://localhost:%v/run?%v", port, testCases[idx])
+		}
+		
+		postResp, postErr := http.Post(request, "", &bytes.Buffer{})
 		if postErr != nil || postResp.StatusCode != http.StatusOK {
 			msg := &strings.Builder{}
 			fmt.Println(msg, "failed to load test cases: ", postErr)
