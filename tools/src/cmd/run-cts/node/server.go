@@ -53,7 +53,7 @@ import (
 // the test cases in testCases. The results of the tests are streamed to results.
 // Blocks until all the tests have been run.
 func (c *cmd) runTestCasesWithServers(
-	ctx context.Context, testCases []common.TestCase, results chan<- common.Result, fsReaderWriter oswrapper.FilesystemReaderWriter) {
+	ctx context.Context, testCases []common.TestCase, results chan<- common.Result, fsReaderWriter oswrapper.FilesystemReaderWriter, tracking bool) {
 	// Create a chan of test indices.
 	// This will be read by the test runner goroutines.
 	testCaseIndices := make(chan int, 256)
@@ -140,6 +140,9 @@ func (c *cmd) runServer(
 		}
 		for _, f := range c.flags.dawn {
 			args = append(args, "--gpu-provider-flag", f)
+		}
+		if c.flags.mutantTracking {
+			args= append(args, "--mutant-tracking")
 		}
 
 		cmd := exec.CommandContext(ctx, c.flags.Node, args...)
