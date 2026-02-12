@@ -274,7 +274,9 @@ func (c *cmd) runServer(
 		
 		var request string
 		if c.flags.mutantTracking {
-			fileName := fmt.Sprintf("/data/dev/dredd-webgpu-testing/data/tracking_files/track_%d.txt", idx)
+			trackingPath := fmt.Sprintf("%s/tracking_files", c.flags.mutantOutput)
+			os.MkdirAll(trackingPath, 0o755)
+			fileName := fmt.Sprintf("%s/track_%d.txt", trackingPath, idx)
 			os.Setenv("DREDD_MUTANT_TRACKING_FILE", fileName)
 			request = fmt.Sprintf("http://localhost:%v/run?%v?%v", port, testCases[idx], testIDMap[string(testCases[idx])])
 		} else {
