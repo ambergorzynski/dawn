@@ -61,6 +61,7 @@ type flags struct {
 	skipVSCodeInfo       bool
 	enforceDefaultLimits bool
 	blockAllFeatures     bool
+	mutantTracking		 bool
 	dawn                 node.Flags
 }
 
@@ -113,6 +114,7 @@ func (c *cmd) RegisterFlags(ctx context.Context, cfg common.Config) ([]string, e
 	flag.BoolVar(&c.flags.skipVSCodeInfo, "skip-vs-code-info", false, "skips emitting VS Code information")
 	flag.BoolVar(&c.flags.enforceDefaultLimits, "enforce-default-limits", false, "enforce the default limits (note: powerPreference tests may fail)")
 	flag.BoolVar(&c.flags.blockAllFeatures, "block-all-features", false, "block all features (except 'core-features-and-limits')")
+	flag.BoolVar(&c.flags.mutantTracking, "mutant-tracking", false, "record covered mutants in tracking file")
 
 	return []string{"[query]"}, nil
 }
@@ -142,7 +144,7 @@ func (c *cmd) Run(ctx context.Context, cfg common.Config) error {
 	}
 	fmt.Printf("Testing %d test cases...\n", len(testCases))
 
-	var runner func(ctx context.Context, testCases []common.TestCase, results chan<- common.Result, fsReaderWriter oswrapper.FilesystemReaderWriter)
+	var runner func(ctx context.Context, testCases []common.TestCase, results chan<- common.Result, fsReaderWriter oswrapper.FilesystemReaderWriter, tracking bool)
 	if c.flags.isolated {
 		fmt.Println("Running in parallel isolated...")
 		runner = c.runTestCasesWithCmdline
@@ -153,7 +155,7 @@ func (c *cmd) Run(ctx context.Context, cfg common.Config) error {
 
 	resultStream := make(chan common.Result, 256)
 	go func() {
-		runner(ctx, testCases, resultStream, cfg.OsWrapper)
+		runner(ctx, testCases, resultStream, cfg.OsWrapper, c.flags.mutantTracking)
 		close(resultStream)
 	}()
 

@@ -49,7 +49,7 @@ import (
 // between tests.
 // Up to c.flags.numRunners tests will be run concurrently.
 func (c *cmd) runTestCasesWithCmdline(
-	ctx context.Context, testCases []common.TestCase, results chan<- common.Result, fsReaderWriter oswrapper.FilesystemReaderWriter) {
+	ctx context.Context, testCases []common.TestCase, results chan<- common.Result, fsReaderWriter oswrapper.FilesystemReaderWriter, tracking bool) {
 	// Create a chan of test indices.
 	// This will be read by the test runner goroutines.
 	testCaseIndices := make(chan int, 256)
