@@ -47,6 +47,43 @@ import (
 	"dawn.googlesource.com/dawn/tools/src/utils"
 )
 
+func saveMappingToFile(filename string, testmap map[string]string) {
+	f, err := os.Create(filename)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	_, err = f.WriteString("{")
+	if err != nil {
+		panic(err)
+	}
+
+	first := true
+	for k, v := range testmap {
+		line := fmt.Sprintf(
+			`"%s":"%s"`,
+			strings.ReplaceAll(k, `"`, `\"`),
+			v,
+		)
+		if !first {
+			line = ",\n" + line
+		}
+		_, err := f.WriteString(line)
+		if err != nil {
+			panic(err)
+		}
+		first = false
+	}
+
+	_, err = f.WriteString("}")
+	if err != nil {
+		panic(err)
+	}
+
+	f.Sync()
+}
+
 // TODO(crbug.com/416755658): Add unittest coverage when there is a way to fake
 // the node process.
 // runTestCasesWithServers spawns c.flags.NumRunners server instances to run all
@@ -54,6 +91,20 @@ import (
 // Blocks until all the tests have been run.
 func (c *cmd) runTestCasesWithServers(
 	ctx context.Context, testCases []common.TestCase, results chan<- common.Result, fsReaderWriter oswrapper.FilesystemReaderWriter, tracking bool) {
+
+	// Create mapping from test to ID.
+	// ID is used to name the test tracking file.
+	testIDMap := make(map[string]string)
+
+	if (tracking) {
+		for i:=0; i < len(testCases); i++ {
+			tesetIDMap[string(testCases[i])] = fmt.Sprintf("test_id_%d", i)
+		}
+	}
+	// Store test case index mapping in file.
+	// TODO: pass file name to function.
+	saveMappingToFile("/data/dev/dredd-webgpu-testing/data/mapping_test_to_id.json", testIDMap)
+
 	// Create a chan of test indices.
 	// This will be read by the test runner goroutines.
 	testCaseIndices := make(chan int, 256)
