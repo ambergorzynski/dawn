@@ -101,9 +101,9 @@ func (c *cmd) runTestCasesWithServers(
 			testIDMap[string(testCases[i])] = fmt.Sprintf("test_id_%d", i)
 		}
 	}
+
 	// Store test case index mapping in file.
-	// TODO: pass file name to function.
-	saveMappingToFile("/data/dev/dredd-webgpu-testing/data/mapping_test_to_id.json", testIDMap)
+	saveMappingToFile(filepath.Join(c.flags.mutantOutput, fmt.Sprintf("%s.json", c.flags.mutantMapFile)), testIDMap)
 
 	// Create a chan of test indices.
 	// This will be read by the test runner goroutines.

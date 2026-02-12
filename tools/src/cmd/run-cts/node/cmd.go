@@ -62,6 +62,8 @@ type flags struct {
 	enforceDefaultLimits bool
 	blockAllFeatures     bool
 	mutantTracking		 bool
+	mutantOutput		 string
+	mutantMapFile 		 string
 	dawn                 node.Flags
 }
 
@@ -114,7 +116,10 @@ func (c *cmd) RegisterFlags(ctx context.Context, cfg common.Config) ([]string, e
 	flag.BoolVar(&c.flags.skipVSCodeInfo, "skip-vs-code-info", false, "skips emitting VS Code information")
 	flag.BoolVar(&c.flags.enforceDefaultLimits, "enforce-default-limits", false, "enforce the default limits (note: powerPreference tests may fail)")
 	flag.BoolVar(&c.flags.blockAllFeatures, "block-all-features", false, "block all features (except 'core-features-and-limits')")
+	// Vars for mutant touching analysis
 	flag.BoolVar(&c.flags.mutantTracking, "mutant-tracking", false, "record covered mutants in tracking file")
+	flag.StringVar(&c.flags.mutantOutput, "mutant-output", "", "directory for touching analysis output")
+	flag.StringVar(&c.flags.mutantMapFile, "mapping-file", "mapping_test_to_id", "file containing map from test ID to test name")
 
 	return []string{"[query]"}, nil
 }
