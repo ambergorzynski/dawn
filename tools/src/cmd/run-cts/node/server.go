@@ -98,7 +98,7 @@ func (c *cmd) runTestCasesWithServers(
 
 	if (tracking) {
 		for i:=0; i < len(testCases); i++ {
-			tesetIDMap[string(testCases[i])] = fmt.Sprintf("test_id_%d", i)
+			testIDMap[string(testCases[i])] = fmt.Sprintf("test_id_%d", i)
 		}
 	}
 	// Store test case index mapping in file.
