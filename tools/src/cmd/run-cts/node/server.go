@@ -217,7 +217,7 @@ func (c *cmd) runServer(
 		if c.flags.Verbose {
 			PrintCommand(cmd, c.flags.skipVSCodeInfo)
 		}
-		err := cmd.Start()
+		err := cmd.Start() 
 		if err != nil {
 			return fmt.Errorf("failed to start test runner server: %v", err)
 		}
@@ -232,16 +232,7 @@ func (c *cmd) runServer(
 		}
 
 		// Load the cases
-		var request string
-		if c.flags.mutantTracking {
-			fileName := fmt.Sprintf("/data/dev/dredd-webgpu-testing/data/tracking_files/track_%d.txt", idx)
-			os.Setenv("DREDD_MUTANT_TRACKING_FILE", fileName)
-			request = fmt.Sprintf("http://localhost:%v/run?%v?%v", port, testCases[idx], testIDMap[string(testCases[idx])])
-		} else {
-			request = fmt.Sprintf("http://localhost:%v/run?%v", port, testCases[idx])
-		}
-		
-		postResp, postErr := http.Post(request, "", &bytes.Buffer{})
+		postResp, postErr := http.Post(fmt.Sprintf("http://localhost:%v/load?%v", port, c.query), "", &bytes.Buffer{})
 		if postErr != nil || postResp.StatusCode != http.StatusOK {
 			msg := &strings.Builder{}
 			fmt.Println(msg, "failed to load test cases: ", postErr)
@@ -280,7 +271,18 @@ func (c *cmd) runServer(
 			CoverageData string
 			DurationMS   float32
 		}
-		postResp, err := http.Post(fmt.Sprintf("http://localhost:%v/run?%v", port, testCases[idx]), "", &bytes.Buffer{})
+		
+		var request string
+		if c.flags.mutantTracking {
+			fileName := fmt.Sprintf("/data/dev/dredd-webgpu-testing/data/tracking_files/track_%d.txt", idx)
+			os.Setenv("DREDD_MUTANT_TRACKING_FILE", fileName)
+			request = fmt.Sprintf("http://localhost:%v/run?%v?%v", port, testCases[idx], testIDMap[string(testCases[idx])])
+		} else {
+			request = fmt.Sprintf("http://localhost:%v/run?%v", port, testCases[idx])
+		}
+
+		postResp, err := http.Post(request, "", &bytes.Buffer{})
+
 		if err != nil {
 			res.Error = fmt.Errorf("server POST failure. Restarting server... This can happen when there is a crash. Try running with --isolate.")
 			res.Status = common.Fail
