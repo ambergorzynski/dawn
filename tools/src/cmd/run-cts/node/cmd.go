@@ -149,7 +149,7 @@ func (c *cmd) Run(ctx context.Context, cfg common.Config) error {
 	}
 	fmt.Printf("Testing %d test cases...\n", len(testCases))
 
-	var runner func(ctx context.Context, testCases []common.TestCase, results chan<- common.Result, fsReaderWriter oswrapper.FilesystemReaderWriter, tracking bool)
+	var runner func(ctx context.Context, testCases []common.TestCase, results chan<- common.Result, fsReaderWriter oswrapper.FilesystemReaderWriter)
 	if c.flags.isolated {
 		fmt.Println("Running in parallel isolated...")
 		runner = c.runTestCasesWithCmdline
@@ -160,7 +160,7 @@ func (c *cmd) Run(ctx context.Context, cfg common.Config) error {
 
 	resultStream := make(chan common.Result, 256)
 	go func() {
-		runner(ctx, testCases, resultStream, cfg.OsWrapper, c.flags.mutantTracking)
+		runner(ctx, testCases, resultStream, cfg.OsWrapper)
 		close(resultStream)
 	}()
 

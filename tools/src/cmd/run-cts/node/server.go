@@ -90,13 +90,13 @@ func saveMappingToFile(filename string, testmap map[string]string) {
 // the test cases in testCases. The results of the tests are streamed to results.
 // Blocks until all the tests have been run.
 func (c *cmd) runTestCasesWithServers(
-	ctx context.Context, testCases []common.TestCase, results chan<- common.Result, fsReaderWriter oswrapper.FilesystemReaderWriter, tracking bool) {
+	ctx context.Context, testCases []common.TestCase, results chan<- common.Result, fsReaderWriter oswrapper.FilesystemReaderWriter) {
 
 	// Create mapping from test to ID.
 	// ID is used to name the test tracking file.
 	testIDMap := make(map[string]string)
 
-	if (tracking) {
+	if (c.flags.mutantTracking) {
 		for i:=0; i < len(testCases); i++ {
 			testIDMap[string(testCases[i])] = fmt.Sprintf("test_id_%d", i)
 		}
