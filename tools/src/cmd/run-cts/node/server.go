@@ -194,7 +194,10 @@ func (c *cmd) runServer(
 			args = append(args, "--gpu-provider-flag", f)
 		}
 		if c.flags.mutantTracking {
-			args= append(args, "--mutant-tracking")
+			args = append(args, "--mutant-tracking")
+			trackingPath := fmt.Sprintf("%s/tracking_files", c.flags.mutantOutput)
+			os.MkdirAll(trackingPath, 0o755)
+			args = append(args, "--mutant-output", trackingPath)
 		}
 
 		cmd := exec.CommandContext(ctx, c.flags.Node, args...)
@@ -274,10 +277,6 @@ func (c *cmd) runServer(
 		
 		var request string
 		if c.flags.mutantTracking {
-			trackingPath := fmt.Sprintf("%s/tracking_files", c.flags.mutantOutput)
-			os.MkdirAll(trackingPath, 0o755)
-			fileName := fmt.Sprintf("%s/track_%d.txt", trackingPath, idx)
-			os.Setenv("DREDD_MUTANT_TRACKING_FILE", fileName)
 			request = fmt.Sprintf("http://localhost:%v/run?%v?%v", port, testCases[idx], testIDMap[string(testCases[idx])])
 		} else {
 			request = fmt.Sprintf("http://localhost:%v/run?%v", port, testCases[idx])
